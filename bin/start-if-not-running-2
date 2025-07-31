@@ -1,0 +1,20 @@
+#!/bin/bash
+
+class=$1
+shift
+
+running=$(wmctrl -l -x | awk '{ if ($3 ~ /^'"$class"'\./) {print}}')
+printf '<%s>\n' "$running"
+if [[ -z "$running" ]]; then
+  if pgrep $1; then
+     printf 'Found running process for class "%s"\n' "$class"
+     printf 'Exiting\n'
+  fi
+  printf 'No windows found for class "%s"\n' "$class"
+  printf 'Starting %s\n' "$class"
+  "$@" &
+else
+  printf 'Found windows for class "%s"\n' "$class"
+  printf 'Bringing to front\n'
+  wmctrl -a "$class"
+fi

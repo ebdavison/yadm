@@ -1,0 +1,37 @@
+#!/bin/bash -ex
+
+_basename=$( basename "$0" )
+_error() { printf 'ERROR: %s\n' "${1?}" >&2; }
+
+_info() { printf 'INFO: %s\n' "${1?}"; }
+
+usage(){
+  printf "%s \n" "$_basename"
+  exit 1
+}
+
+log(){
+  # shellcheck disable=SC2059
+  printf "$@" 1>&2
+}
+
+die(){
+  exit_code=1
+  if [[ $1 =~ ^[0-9][0-9]*$ ]]
+  then
+    exit_code=$1
+    shift
+  fi
+
+  printf "%s\n" "$@"
+  printf "Exiting.\n"
+  exit "$exit_code"
+}
+
+if pgrep -af CiscoCollabHost; then
+  read -t 2 -p "Do you want to kill the CiscoCollabHost process? (y/n) " -n 1 -r answer
+  [[ $answer =~ ^[Yy]$ ]] || die 0 "Exiting without killing the process."
+  pkill -f CiscoCollabHost
+fi
+
+/opt/Webex/bin/CiscoCollabHost "$@"
